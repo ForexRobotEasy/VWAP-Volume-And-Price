@@ -1,0 +1,57 @@
+mql5
+//+------------------------------------------------------------------+
+//|                                                 VWAP Volume And Price |
+//|                                   https://www.forexroboteasy.com |
+//|                                     Developed by Forex Robot Easy Team |
+//+------------------------------------------------------------------+
+#property strict
+
+// Define inputs
+input ENUM_TIMEFRAMES Timeframe = PERIOD_H1;
+input int Period = 20;
+
+//+------------------------------------------------------------------+
+//| Custom indicator initialization function                         |
+//+------------------------------------------------------------------+
+int OnInit()
+{
+   IndicatorShortName('VWAP Volume And Price');
+   SetIndexStyle(0, DRAW_LINE);
+   SetIndexBuffer(0, VWAPBuffer);
+   return(INIT_SUCCEEDED);
+}
+
+//+------------------------------------------------------------------+
+//| Custom indicator iteration function                              |
+//+------------------------------------------------------------------+
+int OnCalculate(const int rates_total, const int prev_calculated, const datetime &time[], const double &open[], const double &high[], const double &low[], const double &close[], const long &tick_volume[], const long &volume[], const int &spread[])
+{
+   int limit = rates_total - prev_calculated;
+   if(limit > 0)
+   {
+      for(int i = limit; i >= 0; i--)
+      {
+         double typical_price = (high[i] + low[i] + close[i]) / 3;
+         double weighted_price = 0;
+         double volume_sum = 0;
+         
+         for(int j = i; j <= i + Period - 1; j++)
+         {
+            volume_sum += volume[j];
+            weighted_price += typical_price * volume[j];
+         }
+         
+         double vwap = weighted_price / volume_sum;
+         VWAPBuffer[i] = vwap;
+      }
+   }
+
+   return(rates_total);
+}
+
+//+------------------------------------------------------------------+
+//| Global variables                                                 |
+//+------------------------------------------------------------------+
+double VWAPBuffer[];
+
+//+------------------------------------------------------------------+
